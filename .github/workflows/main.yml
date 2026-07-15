@@ -1,17 +1,26 @@
 name: Build Karing Android APK
 
 on:
-  workflow_dispatch: # မိမိဘာသာ Manual နှိပ်ပြီး Build ရန်အတွက်
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
+    # ၁။ သင့်ရဲ့ Karing ကုဒ်ကို 'karing' ဆိုတဲ့ ဖိုင်တွဲအမည်ဖြင့် ဆွဲယူပါမည်
+    - name: Checkout karing
       uses: actions/checkout@v4
       with:
-        submodules: recursive # V2Ray Core များ ပါဝင်လာစေရန်
+        path: karing
+        submodules: recursive
+
+    # ၂။ လိုအပ်နေသော vpn-service ကုဒ်ကို 'vpn-service' အမည်ဖြင့် မူရင်းဆီမှ ဆွဲယူပါမည်
+    - name: Checkout vpn-service
+      uses: actions/checkout@v4
+      with:
+        repository: KaringX/vpn-service
+        path: vpn-service
 
     - name: Set up Java
       uses: actions/setup-java@v4
@@ -24,14 +33,17 @@ jobs:
       with:
         channel: 'master'
 
+    # ၃။ karing ဖိုင်တွဲထဲသို့ ဝင်၍ command များကို run ရပါမည် (working-directory ထည့်ထားပါသည်)
     - name: Install dependencies
       run: flutter pub get
+      working-directory: karing
 
     - name: Build Debug APK
       run: flutter build apk --debug
+      working-directory: karing
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: M-Gate-VPN-APK
-        path: build/app/outputs/flutter-apk/app-debug.apk
+        path: karing/build/app/outputs/flutter-apk/app-debug.apk
